@@ -1,0 +1,7 @@
+rsyslog_default_only: True
+rsyslog_config_file: '/etc/rsyslog.conf'
+rsyslog_log_level: '*'
+rsyslog_port: '514'
+rsyslog_rules_dir: '/etc/rsyslog.d'
+rsyslog_default_rules_file: '50-default.conf'
+rsyslog_custom_rules_file: '90-custom.conf'

@@ -1,0 +1,51 @@
+- name: install rsyslog package
+  apt: 
+    name: rsyslog
+    state: 'latest'
+
+- name: Removing remote server from config
+  lineinfile:
+    dest: '{{ rsyslog_config_file }}'
+    regexp: '^(.*)@@{{ rsyslog_server }}:{{ rsyslog_port }}(.*)$'
+    state: absent
+  when: rsyslog_server is defined
+
+- name: Setting remote server in config
+  lineinfile:
+    dest: '{{ rsyslog_config_file }}'
+    line: '*.{{ rsyslog_log_level }} @@{{ rsyslog_server }}:{{ rsyslog_port }}'
+    state: present
+  when: rsyslog_server is defined
+
+- name: Setting default logging only
+  lineinfile:
+    dest: '{{ rsyslog_config_file }}'
+    regexp: '^(.*)\$IncludeConfig(.*)$'
+    line: '$IncludeConfig {{ rsyslog_rules_dir }}/{{ rsyslog_default_rules_file }}'
+  when: rsyslog_default_only == True
+  
+- name: Setting all logging rules
+  lineinfile:
+    dest: '{{ rsyslog_config_file }}'
+    regexp: '^(.*)\$IncludeConfig(.*)$'
+    line: '$IncludeConfig {{ rsyslog_rules_dir }}/*.conf'
+  when: rsyslog_default_only == False
+
+- name: Deleting custom logging rules
+  file:
+    path: '{{ rsyslog_rules_dir }}/{{ rsyslog_custom_rules_file }}'
+    state: absent
+
+- name: Setting custom logging rules
+  lineinfile:
+    dest: '{{ rsyslog_rules_dir }}/{{ rsyslog_custom_rules_file }}'
+    create: yes
+    line: '{{ item.facility }}.{{ item.level }} {{ item.file }}'
+  with_items: "{{ rsyslog_custom_rules }}"
+#  with_dict: "{{ rsyslog_custom_rules|default({}) }}"
+  when: item.file is defined
+
+- name: Restart rsyslog daemon
+  service: 
+    name: rsyslog
+    state: restarted
