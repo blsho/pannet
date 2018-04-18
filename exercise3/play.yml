@@ -2,7 +2,6 @@
   roles: 
     - role: blesak.rsyslog
       rsyslog_default_only: False
-      rsyslog_custom_rules: ''
       rsyslog_server: '192.168.1.2'
       rsyslog_custom_rules:
         - { file: '/home/varlog/local10.log', facility: 'local0', level: '*'}
